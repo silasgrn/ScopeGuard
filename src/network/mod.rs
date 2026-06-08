@@ -19,7 +19,9 @@ fn parse_listening_services(output: &str) -> Vec<ListeningService> {
             }
             let proto = columns[0].to_string();
             let local_address = columns[4];
-            let (address, port) = local_address.rsplit_once(':').unwrap_or((local_address, "0"));
+            let (address, port) = local_address
+                .rsplit_once(':')
+                .unwrap_or((local_address, "0"));
             let port = port.parse::<u16>().unwrap_or(0);
             let exposed = address == "0.0.0.0" || address == "::" || address == ":::";
 
@@ -71,8 +73,11 @@ pub fn run_network_audit() -> Vec<Finding> {
             findings.push(Finding {
                 title: "Network listener scan failed".to_string(),
                 description: "The ss command could not enumerate listening sockets.".to_string(),
-                risk: "Failed network discovery may hide services bound to public interfaces.".to_string(),
-                recommendation: "Ensure the ss utility is installed and accessible to the current user.".to_string(),
+                risk: "Failed network discovery may hide services bound to public interfaces."
+                    .to_string(),
+                recommendation:
+                    "Ensure the ss utility is installed and accessible to the current user."
+                        .to_string(),
                 severity: Severity::Medium,
                 category: "Network Security".to_string(),
             });
@@ -81,8 +86,11 @@ pub fn run_network_audit() -> Vec<Finding> {
         findings.push(Finding {
             title: "Network scanner unavailable".to_string(),
             description: "The system does not appear to have the ss utility installed.".to_string(),
-            risk: "Without socket inspection, service exposure cannot be reliably assessed.".to_string(),
-            recommendation: "Install iproute2 or another socket inspection tool before rerunning the audit.".to_string(),
+            risk: "Without socket inspection, service exposure cannot be reliably assessed."
+                .to_string(),
+            recommendation:
+                "Install iproute2 or another socket inspection tool before rerunning the audit."
+                    .to_string(),
             severity: Severity::Info,
             category: "Network Security".to_string(),
         });

@@ -43,9 +43,15 @@ pub fn run_virtualization_audit() -> Vec<Finding> {
         if !vm.firewall_enabled {
             findings.push(Finding {
                 title: format!("Virtual machine firewall not enabled: {}", vm.name),
-                description: format!("{} does not appear to have a guest firewall enabled.", vm.name),
-                risk: "A VM without an internal firewall is more vulnerable to exposed services.".to_string(),
-                recommendation: "Enable a firewall inside the guest or restrict its network exposure.".to_string(),
+                description: format!(
+                    "{} does not appear to have a guest firewall enabled.",
+                    vm.name
+                ),
+                risk: "A VM without an internal firewall is more vulnerable to exposed services."
+                    .to_string(),
+                recommendation:
+                    "Enable a firewall inside the guest or restrict its network exposure."
+                        .to_string(),
                 severity: Severity::Low,
                 category: "Virtualization Security".to_string(),
             });

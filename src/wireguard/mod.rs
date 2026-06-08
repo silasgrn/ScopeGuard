@@ -33,8 +33,11 @@ pub fn run_wireguard_audit() -> Vec<Finding> {
             findings.push(Finding {
                 title: format!("WireGuard peer appears inactive: {}", peer.public_key),
                 description: format!("Peer {} has no recent handshake recorded.", peer.public_key),
-                risk: "An inactive WireGuard peer may represent stale or unused access credentials.".to_string(),
-                recommendation: "Remove or rotate unused WireGuard peers to reduce attack surface.".to_string(),
+                risk:
+                    "An inactive WireGuard peer may represent stale or unused access credentials."
+                        .to_string(),
+                recommendation: "Remove or rotate unused WireGuard peers to reduce attack surface."
+                    .to_string(),
                 severity: Severity::Low,
                 category: "WireGuard".to_string(),
             });
@@ -44,9 +47,13 @@ pub fn run_wireguard_audit() -> Vec<Finding> {
     if findings.is_empty() {
         findings.push(Finding {
             title: "WireGuard audit placeholder".to_string(),
-            description: "WireGuard peers were inspected and no stale peer placeholders were detected.".to_string(),
+            description:
+                "WireGuard peers were inspected and no stale peer placeholders were detected."
+                    .to_string(),
             risk: "WireGuard audit is active but requires real peer state collection.".to_string(),
-            recommendation: "Integrate actual WireGuard configuration parsing and handshake verification.".to_string(),
+            recommendation:
+                "Integrate actual WireGuard configuration parsing and handshake verification."
+                    .to_string(),
             severity: Severity::Info,
             category: "WireGuard".to_string(),
         });

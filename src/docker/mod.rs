@@ -52,9 +52,14 @@ fn build_container_findings(containers: &[ContainerStatus]) -> Vec<Finding> {
         if container.host_network {
             findings.push(Finding {
                 title: format!("Container using host network: {}", container.name),
-                description: format!("Container {} shares the host network namespace.", container.name),
-                risk: "Host network mode exposes container services on all host interfaces.".to_string(),
-                recommendation: "Use bridge or overlay networking instead of host network mode.".to_string(),
+                description: format!(
+                    "Container {} shares the host network namespace.",
+                    container.name
+                ),
+                risk: "Host network mode exposes container services on all host interfaces."
+                    .to_string(),
+                recommendation: "Use bridge or overlay networking instead of host network mode."
+                    .to_string(),
                 severity: Severity::Medium,
                 category: "Container Security".to_string(),
             });
@@ -63,9 +68,14 @@ fn build_container_findings(containers: &[ContainerStatus]) -> Vec<Finding> {
         if container.host_mount {
             findings.push(Finding {
                 title: format!("Container has host mount: {}", container.name),
-                description: format!("Container {} mounts host file system paths into the container.", container.name),
-                risk: "Host mounts may expose host files and secrets to container processes.".to_string(),
-                recommendation: "Limit host mounts to only the paths required by the workload.".to_string(),
+                description: format!(
+                    "Container {} mounts host file system paths into the container.",
+                    container.name
+                ),
+                risk: "Host mounts may expose host files and secrets to container processes."
+                    .to_string(),
+                recommendation: "Limit host mounts to only the paths required by the workload."
+                    .to_string(),
                 severity: Severity::Medium,
                 category: "Container Security".to_string(),
             });
