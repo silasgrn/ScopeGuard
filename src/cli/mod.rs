@@ -2,6 +2,7 @@ use clap::{Parser, Subcommand};
 
 use crate::audit::run_all_audits;
 use crate::report::{render_html, render_human, render_json};
+use crate::scope::ScopeFile;
 
 #[derive(Parser)]
 #[command(name = "scopeguard")]
@@ -17,6 +18,8 @@ enum Action {
     Scan {
         #[arg(long, help = "Emit JSON output")]
         json: bool,
+        #[arg(long, help = "Read a JSON scope file with service definitions")]
+        scope: Option<String>,
     },
     /// Generate a security report
     Report {
@@ -33,10 +36,21 @@ enum Action {
 
 pub fn run() -> Result<(), String> {
     let command = CommandLine::parse();
-    let findings = run_all_audits();
+    let scope_file = match &command.command {
+        Action::Scan { scope, .. } => {
+            if let Some(path) = scope {
+                Some(ScopeFile::load(path)?)
+            } else {
+                None
+            }
+        }
+        _ => None,
+    };
+
+    let findings = run_all_audits(scope_file.as_ref());
 
     match command.command {
-        Action::Scan { json } => {
+        Action::Scan { json, .. } => {
             if json {
                 let serialized = render_json(&findings);
                 println!(

@@ -7,6 +7,7 @@ pub mod firewall;
 pub mod host;
 pub mod network;
 pub mod report;
+pub mod scope;
 pub mod services;
 pub mod vm;
 pub mod wireguard;

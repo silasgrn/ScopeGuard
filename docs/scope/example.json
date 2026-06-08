@@ -1,0 +1,44 @@
+{
+  "services": [
+    {
+      "name": "api-gateway",
+      "protocol": "tcp",
+      "host": "0.0.0.0",
+      "port": 8080,
+      "exposed": true,
+      "description": "Main REST API gateway"
+    },
+    {
+      "name": "postgres-primary",
+      "protocol": "tcp",
+      "host": "127.0.0.1",
+      "port": 5432,
+      "exposed": false,
+      "description": "Primary PostgreSQL database"
+    },
+    {
+      "name": "redis-cache",
+      "protocol": "tcp",
+      "host": "192.168.1.100",
+      "port": 6379,
+      "exposed": false,
+      "description": "Redis cache cluster node"
+    },
+    {
+      "name": "grafana-dashboard",
+      "protocol": "tcp",
+      "host": "0.0.0.0",
+      "port": 3000,
+      "exposed": true,
+      "description": "Grafana monitoring dashboard"
+    },
+    {
+      "name": "prometheus-metrics",
+      "protocol": "tcp",
+      "host": "127.0.0.1",
+      "port": 9090,
+      "exposed": false,
+      "description": "Prometheus time-series database"
+    }
+  ]
+}

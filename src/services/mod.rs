@@ -1,4 +1,5 @@
 use crate::finding::{Finding, Severity};
+use crate::scope::ScopeFile;
 
 pub struct ServiceEntry {
     pub name: String,
@@ -6,9 +7,31 @@ pub struct ServiceEntry {
     pub protocol: String,
     pub bound_to: String,
     pub exposed: bool,
+    pub description: Option<String>,
 }
 
-fn discover_services() -> Vec<ServiceEntry> {
+impl ServiceEntry {
+    fn from_scope(service: &crate::scope::ScopeService) -> Self {
+        ServiceEntry {
+            name: service.name.clone(),
+            protocol: service.protocol.clone(),
+            bound_to: service.host.clone(),
+            port: service.port,
+            exposed: service.exposed,
+            description: service.description.clone(),
+        }
+    }
+}
+
+fn discover_services(scope: Option<&ScopeFile>) -> Vec<ServiceEntry> {
+    if let Some(scope) = scope {
+        return scope
+            .services
+            .iter()
+            .map(ServiceEntry::from_scope)
+            .collect();
+    }
+
     vec![
         ServiceEntry {
             name: "nginx".to_string(),
@@ -16,6 +39,7 @@ fn discover_services() -> Vec<ServiceEntry> {
             protocol: "tcp".to_string(),
             bound_to: "0.0.0.0".to_string(),
             exposed: true,
+            description: Some("Example web server".to_string()),
         },
         ServiceEntry {
             name: "postgres".to_string(),
@@ -23,6 +47,7 @@ fn discover_services() -> Vec<ServiceEntry> {
             protocol: "tcp".to_string(),
             bound_to: "127.0.0.1".to_string(),
             exposed: false,
+            description: Some("Local database service".to_string()),
         },
         ServiceEntry {
             name: "redis".to_string(),
@@ -30,12 +55,13 @@ fn discover_services() -> Vec<ServiceEntry> {
             protocol: "tcp".to_string(),
             bound_to: "0.0.0.0".to_string(),
             exposed: true,
+            description: Some("In-memory cache service".to_string()),
         },
     ]
 }
 
-pub fn run_services_audit() -> Vec<Finding> {
-    let services = discover_services();
+pub fn run_services_audit(scope: Option<&ScopeFile>) -> Vec<Finding> {
+    let services = discover_services(scope);
     let mut findings = Vec::new();
 
     for service in services {
