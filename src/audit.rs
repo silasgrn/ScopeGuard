@@ -4,7 +4,7 @@ use crate::scope::ScopeFile;
 pub fn run_all_audits(scope: Option<&ScopeFile>) -> Vec<Finding> {
     let mut findings = Vec::new();
 
-    findings.extend(crate::host::run_host_audit());
+    findings.extend(crate::ssh::run_ssh_audit());
     findings.extend(crate::network::run_network_audit());
     findings.extend(crate::firewall::run_firewall_audit(scope));
     findings.extend(crate::docker::run_container_audit());

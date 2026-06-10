@@ -9,5 +9,6 @@ pub mod network;
 pub mod report;
 pub mod scope;
 pub mod services;
+pub mod ssh;
 pub mod vm;
 pub mod wireguard;
