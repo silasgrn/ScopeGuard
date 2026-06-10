@@ -60,10 +60,10 @@ pub fn run_virtualization_audit() -> Vec<Finding> {
 
     if findings.is_empty() {
         findings.push(Finding {
-            title: "Virtualization audit placeholder".to_string(),
-            description: "No risky virtualization patterns were detected by the placeholder VM discovery.".to_string(),
-            risk: "Virtualization checks are available but not yet complete for every hypervisor.".to_string(),
-            recommendation: "Extend VM discovery to include actual QEMU, Proxmox, and containerized VM platforms.".to_string(),
+            title: "Virtualization audit completed".to_string(),
+            description: "No risky virtualization patterns were detected by the current audit checks.".to_string(),
+            risk: "No virtualization issues were found by the current discovery routine.".to_string(),
+            recommendation: "Enhance VM discovery coverage for additional hypervisors and guest settings.".to_string(),
             severity: Severity::Info,
             category: "Virtualization Security".to_string(),
         });

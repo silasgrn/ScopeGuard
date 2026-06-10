@@ -4,6 +4,7 @@ use std::path::Path;
 use crate::finding::{Finding, Severity};
 
 pub struct SshConfig {
+    pub loaded: bool,
     pub permit_root_login: Option<String>,
     pub password_authentication: Option<String>,
     pub pubkey_authentication: Option<String>,
@@ -20,6 +21,7 @@ impl SshConfig {
 pub fn load_ssh_config() -> SshConfig {
     let path = Path::new("/etc/ssh/sshd_config");
     let mut config = SshConfig {
+        loaded: path.exists(),
         permit_root_login: None,
         password_authentication: None,
         pubkey_authentication: None,
@@ -157,15 +159,26 @@ pub fn run_host_audit() -> Vec<Finding> {
         findings.push(finding);
     }
 
-    if findings.is_empty() && config.is_empty() {
-        findings.push(Finding {
-            title: "SSH audit loaded default placeholder".to_string(),
-            description: "SSH audit is configured and waiting to inspect real SSH configuration values.".to_string(),
-            risk: "No SSH-specific findings were generated because no relevant configuration items were detected.".to_string(),
-            recommendation: "Add SSH daemon configuration checks and run the scanner again.".to_string(),
-            severity: Severity::Info,
-            category: "Host Security".to_string(),
-        });
+    if findings.is_empty() {
+        if !config.loaded {
+            findings.push(Finding {
+                title: "SSH configuration not found".to_string(),
+                description: "The SSH daemon configuration file /etc/ssh/sshd_config could not be located.".to_string(),
+                risk: "SSH configuration could not be inspected, so potential weaknesses may be missed.".to_string(),
+                recommendation: "Verify that sshd is installed and the configuration file is accessible to the scanner.".to_string(),
+                severity: Severity::Info,
+                category: "Host Security".to_string(),
+            });
+        } else {
+            findings.push(Finding {
+                title: "SSH audit completed".to_string(),
+                description: "SSH configuration was inspected and no high-risk SSH settings were detected.".to_string(),
+                risk: "No SSH-specific issues were found by the current checks.".to_string(),
+                recommendation: "Review SSH configuration for additional hardening opportunities as needed.".to_string(),
+                severity: Severity::Info,
+                category: "Host Security".to_string(),
+            });
+        }
     }
 
     findings
