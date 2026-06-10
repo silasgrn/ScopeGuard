@@ -81,10 +81,12 @@ fn list_containers() -> Vec<ContainerStatus> {
         .map(|entry| {
             let host_config = inspect_host_config(engine, &entry.id);
             let privileged = host_config.as_ref().is_some_and(|config| config.privileged);
-            let host_network = host_config.as_ref().is_some_and(|config| config.network_mode == "host");
-            let host_mount = host_config.as_ref().is_some_and(|config| {
-                config.mounts.iter().any(|mount| mount.source.is_some())
-            });
+            let host_network = host_config
+                .as_ref()
+                .is_some_and(|config| config.network_mode == "host");
+            let host_mount = host_config
+                .as_ref()
+                .is_some_and(|config| config.mounts.iter().any(|mount| mount.source.is_some()));
 
             ContainerStatus {
                 name: entry.names,
