@@ -8,7 +8,7 @@ pub struct Finding {
     pub category: String,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Severity {
     Critical,
     High,
