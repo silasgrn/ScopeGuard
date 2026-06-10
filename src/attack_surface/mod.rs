@@ -40,7 +40,9 @@ fn parse_listening_nodes(output: &str) -> Vec<AttackSurfaceNode> {
 
             let proto = columns[0].to_string();
             let local_address = columns[4];
-            let (address, port) = local_address.rsplit_once(':').unwrap_or((local_address, "0"));
+            let (address, port) = local_address
+                .rsplit_once(':')
+                .unwrap_or((local_address, "0"));
             let exposed = address == "0.0.0.0" || address == "::" || address == ":::";
 
             if !exposed {
@@ -52,7 +54,9 @@ fn parse_listening_nodes(output: &str) -> Vec<AttackSurfaceNode> {
                 name: format!("{}:{}", proto, port),
                 description: format!(
                     "{} service exposed on {}:{}",
-                    proto.to_uppercase(), address, port
+                    proto.to_uppercase(),
+                    address,
+                    port
                 ),
             })
         })
@@ -81,8 +85,12 @@ pub fn run_attack_surface_audit() -> Vec<Finding> {
         .map(|node| Finding {
             title: format!("Attack surface node discovered: {}", node.name),
             description: format!("{} node discovered: {}.", node.node_type, node.description),
-            risk: "Discovered nodes may expose services or routes that increase the attack surface.".to_string(),
-            recommendation: "Map the relationships between discovered nodes and review exposed dependencies.".to_string(),
+            risk:
+                "Discovered nodes may expose services or routes that increase the attack surface."
+                    .to_string(),
+            recommendation:
+                "Map the relationships between discovered nodes and review exposed dependencies."
+                    .to_string(),
             severity: Severity::Info,
             category: "Attack Surface".to_string(),
         })

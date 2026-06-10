@@ -1,6 +1,6 @@
-use crate::scope::ScopeFile;
 use super::backend::detect_firewall;
 use super::findings::build_firewall_findings;
+use crate::scope::ScopeFile;
 
 pub fn run_firewall_audit(scope: Option<&ScopeFile>) -> Vec<crate::finding::Finding> {
     let status = detect_firewall();

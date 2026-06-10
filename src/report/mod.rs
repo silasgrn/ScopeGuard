@@ -58,11 +58,26 @@ pub fn render_html(findings: &[Finding]) -> String {
     });
 
     let total = sorted.len();
-    let critical = sorted.iter().filter(|f| f.severity == crate::finding::Severity::Critical).count();
-    let high = sorted.iter().filter(|f| f.severity == crate::finding::Severity::High).count();
-    let medium = sorted.iter().filter(|f| f.severity == crate::finding::Severity::Medium).count();
-    let low = sorted.iter().filter(|f| f.severity == crate::finding::Severity::Low).count();
-    let info = sorted.iter().filter(|f| f.severity == crate::finding::Severity::Info).count();
+    let critical = sorted
+        .iter()
+        .filter(|f| f.severity == crate::finding::Severity::Critical)
+        .count();
+    let high = sorted
+        .iter()
+        .filter(|f| f.severity == crate::finding::Severity::High)
+        .count();
+    let medium = sorted
+        .iter()
+        .filter(|f| f.severity == crate::finding::Severity::Medium)
+        .count();
+    let low = sorted
+        .iter()
+        .filter(|f| f.severity == crate::finding::Severity::Low)
+        .count();
+    let info = sorted
+        .iter()
+        .filter(|f| f.severity == crate::finding::Severity::Info)
+        .count();
 
     let items: String = sorted
         .iter()

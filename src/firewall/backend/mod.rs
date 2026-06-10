@@ -102,7 +102,10 @@ fn parse_destination(line: &str) -> String {
         }
     }
 
-    if let Some(dpt) = lower.split_whitespace().find(|token| token.starts_with("dpt:")) {
+    if let Some(dpt) = lower
+        .split_whitespace()
+        .find(|token| token.starts_with("dpt:"))
+    {
         return dpt.trim_start_matches("dpt:").to_string();
     }
 

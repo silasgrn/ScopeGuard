@@ -25,7 +25,13 @@ impl ServiceEntry {
 
 fn discover_services(scope: Option<&ScopeFile>) -> Vec<ServiceEntry> {
     scope
-        .map(|scope| scope.services.iter().map(ServiceEntry::from_scope).collect())
+        .map(|scope| {
+            scope
+                .services
+                .iter()
+                .map(ServiceEntry::from_scope)
+                .collect()
+        })
         .unwrap_or_default()
 }
 

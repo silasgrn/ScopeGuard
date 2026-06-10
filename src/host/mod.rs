@@ -172,9 +172,13 @@ pub fn run_host_audit() -> Vec<Finding> {
         } else {
             findings.push(Finding {
                 title: "SSH audit completed".to_string(),
-                description: "SSH configuration was inspected and no high-risk SSH settings were detected.".to_string(),
+                description:
+                    "SSH configuration was inspected and no high-risk SSH settings were detected."
+                        .to_string(),
                 risk: "No SSH-specific issues were found by the current checks.".to_string(),
-                recommendation: "Review SSH configuration for additional hardening opportunities as needed.".to_string(),
+                recommendation:
+                    "Review SSH configuration for additional hardening opportunities as needed."
+                        .to_string(),
                 severity: Severity::Info,
                 category: "Host Security".to_string(),
             });

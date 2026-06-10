@@ -1,12 +1,14 @@
+use super::backend::{FirewallBackend, FirewallRule, FirewallStatus, parse_firewall_rules};
 use crate::finding::{Finding, Severity};
 use crate::scope::ScopeFile;
-use super::backend::{parse_firewall_rules, FirewallBackend, FirewallRule, FirewallStatus};
 
-fn find_scope_match<'a>(rule: &FirewallRule, scope: Option<&'a ScopeFile>) -> Option<&'a crate::scope::ScopeService> {
+fn find_scope_match<'a>(
+    rule: &FirewallRule,
+    scope: Option<&'a ScopeFile>,
+) -> Option<&'a crate::scope::ScopeService> {
     scope.and_then(|scope| {
         scope.services.iter().find(|service| {
-            service.port == rule.port
-                && service.protocol.eq_ignore_ascii_case(&rule.protocol)
+            service.port == rule.port && service.protocol.eq_ignore_ascii_case(&rule.protocol)
         })
     })
 }
@@ -14,7 +16,9 @@ fn find_scope_match<'a>(rule: &FirewallRule, scope: Option<&'a ScopeFile>) -> Op
 fn rule_description(rule: &FirewallRule) -> String {
     format!(
         "Firewall accepts inbound {} traffic on port {} destined for {}.",
-        rule.protocol.to_uppercase(), rule.port, rule.destination
+        rule.protocol.to_uppercase(),
+        rule.port,
+        rule.destination
     )
 }
 
@@ -23,8 +27,10 @@ pub fn build_firewall_findings(status: &FirewallStatus, scope: Option<&ScopeFile
         return vec![Finding {
             title: "No firewall backend detected".to_string(),
             description: "Neither nftables nor iptables were detected on this host.".to_string(),
-            risk: "No detected firewall backend increases the risk of unmanaged network exposure.".to_string(),
-            recommendation: "Install and configure nftables or iptables to protect the host.".to_string(),
+            risk: "No detected firewall backend increases the risk of unmanaged network exposure."
+                .to_string(),
+            recommendation: "Install and configure nftables or iptables to protect the host."
+                .to_string(),
             severity: Severity::High,
             category: "Firewall".to_string(),
         }];
@@ -51,7 +57,8 @@ pub fn build_firewall_findings(status: &FirewallStatus, scope: Option<&ScopeFile
                 }
             ),
             risk: "Missing firewall rules may expose the host to network attacks.".to_string(),
-            recommendation: "Verify firewall configuration and permissions for ruleset inspection.".to_string(),
+            recommendation: "Verify firewall configuration and permissions for ruleset inspection."
+                .to_string(),
             severity: Severity::Medium,
             category: "Firewall".to_string(),
         }];
@@ -69,9 +76,14 @@ pub fn build_firewall_findings(status: &FirewallStatus, scope: Option<&ScopeFile
                     FirewallBackend::Unknown => "firewall",
                 }
             ),
-            description: "The firewall backend is configured and no inbound accept rules were parsed.".to_string(),
-            risk: "No open service rules were detected in the current firewall configuration.".to_string(),
-            recommendation: "Validate that the firewall is enforcing the expected allow/deny policy.".to_string(),
+            description:
+                "The firewall backend is configured and no inbound accept rules were parsed."
+                    .to_string(),
+            risk: "No open service rules were detected in the current firewall configuration."
+                .to_string(),
+            recommendation:
+                "Validate that the firewall is enforcing the expected allow/deny policy."
+                    .to_string(),
             severity: Severity::Info,
             category: "Firewall".to_string(),
         }];
@@ -92,16 +104,16 @@ pub fn build_firewall_findings(status: &FirewallStatus, scope: Option<&ScopeFile
                 rule.port
             )
         } else {
-            format!(
-                "Open firewall service detected on port {}",
-                rule.port
-            )
+            format!("Open firewall service detected on port {}", rule.port)
         };
 
         let description = if let Some(service) = matching_service {
             format!(
                 "Firewall rule matches scoped service '{}' and accepts inbound {} traffic on {}:{}.",
-                service.name, rule.protocol.to_uppercase(), rule.destination, rule.port
+                service.name,
+                rule.protocol.to_uppercase(),
+                rule.destination,
+                rule.port
             )
         } else {
             rule_description(&rule)
@@ -110,7 +122,8 @@ pub fn build_firewall_findings(status: &FirewallStatus, scope: Option<&ScopeFile
         let risk = if matching_service.is_some() {
             "A known service from scope is permitted by the firewall. Confirm access controls are still appropriate.".to_string()
         } else {
-            "An open firewall rule permits inbound traffic to an unsupervised port or protocol.".to_string()
+            "An open firewall rule permits inbound traffic to an unsupervised port or protocol."
+                .to_string()
         };
 
         let recommendation = if matching_service.is_some() {
@@ -134,10 +147,10 @@ pub fn build_firewall_findings(status: &FirewallStatus, scope: Option<&ScopeFile
 
 #[cfg(test)]
 mod tests {
+    use super::super::backend::{FirewallBackend, FirewallStatus};
     use super::*;
     use crate::scope::ScopeFile;
     use crate::scope::ScopeService;
-    use super::super::backend::{FirewallBackend, FirewallStatus};
 
     #[test]
     fn nftables_rules_loaded_returns_nftables_findings() {
@@ -174,7 +187,11 @@ mod tests {
         let findings = build_firewall_findings(&status, Some(&scope));
         assert_eq!(findings.len(), 1);
         assert_eq!(findings[0].severity, Severity::Info);
-        assert!(findings[0].title.contains("Known scoped firewall service detected"));
+        assert!(
+            findings[0]
+                .title
+                .contains("Known scoped firewall service detected")
+        );
     }
 
     #[test]

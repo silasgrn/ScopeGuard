@@ -82,9 +82,13 @@ pub fn run_network_audit() -> Vec<Finding> {
         if findings.is_empty() {
             findings.push(Finding {
                 title: "No publicly exposed listeners detected".to_string(),
-                description: "The network scanner found no services bound to public interfaces.".to_string(),
-                risk: "No publicly exposed listening sockets were identified during this scan.".to_string(),
-                recommendation: "Review local-only bindings and verify the expected network exposure.".to_string(),
+                description: "The network scanner found no services bound to public interfaces."
+                    .to_string(),
+                risk: "No publicly exposed listening sockets were identified during this scan."
+                    .to_string(),
+                recommendation:
+                    "Review local-only bindings and verify the expected network exposure."
+                        .to_string(),
                 severity: Severity::Info,
                 category: "Network Security".to_string(),
             });

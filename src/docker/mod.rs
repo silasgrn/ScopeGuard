@@ -80,7 +80,9 @@ fn list_containers() -> Vec<ContainerStatus> {
         .filter_map(|line| serde_json::from_str::<ContainerPsEntry>(line).ok())
         .map(|entry| {
             let host_config = inspect_host_config(engine, &entry.id);
-            let privileged = host_config.as_ref().map_or(false, |config| config.privileged);
+            let privileged = host_config
+                .as_ref()
+                .map_or(false, |config| config.privileged);
             let host_network = host_config
                 .as_ref()
                 .map_or(false, |config| config.network_mode == "host");
@@ -121,8 +123,10 @@ fn build_container_findings(containers: &[ContainerStatus]) -> Vec<Finding> {
                     "Container {} shares the host network namespace.",
                     container.name
                 ),
-                risk: "Host network mode exposes container services on all host interfaces.".to_string(),
-                recommendation: "Use bridge or overlay networking instead of host network mode.".to_string(),
+                risk: "Host network mode exposes container services on all host interfaces."
+                    .to_string(),
+                recommendation: "Use bridge or overlay networking instead of host network mode."
+                    .to_string(),
                 severity: Severity::Medium,
                 category: "Container Security".to_string(),
             });
@@ -135,8 +139,10 @@ fn build_container_findings(containers: &[ContainerStatus]) -> Vec<Finding> {
                     "Container {} mounts host file system paths into the container.",
                     container.name
                 ),
-                risk: "Host mounts may expose host files and secrets to container processes.".to_string(),
-                recommendation: "Limit host mounts to only the paths required by the workload.".to_string(),
+                risk: "Host mounts may expose host files and secrets to container processes."
+                    .to_string(),
+                recommendation: "Limit host mounts to only the paths required by the workload."
+                    .to_string(),
                 severity: Severity::Medium,
                 category: "Container Security".to_string(),
             });
@@ -147,8 +153,11 @@ fn build_container_findings(containers: &[ContainerStatus]) -> Vec<Finding> {
         findings.push(Finding {
             title: "Container audit completed".to_string(),
             description: "No insecure container runtime settings were detected.".to_string(),
-            risk: "No privileged host mounts or host network containers were identified.".to_string(),
-            recommendation: "Monitor container runtime security and extend coverage to additional runtimes.".to_string(),
+            risk: "No privileged host mounts or host network containers were identified."
+                .to_string(),
+            recommendation:
+                "Monitor container runtime security and extend coverage to additional runtimes."
+                    .to_string(),
             severity: Severity::Info,
             category: "Container Security".to_string(),
         });

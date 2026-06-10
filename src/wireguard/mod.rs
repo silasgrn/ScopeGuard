@@ -53,12 +53,17 @@ pub fn run_wireguard_audit() -> Vec<Finding> {
         Err(_) => {
             return vec![Finding {
                 title: "WireGuard audit unavailable".to_string(),
-                description: "The WireGuard toolchain is unavailable or peer state could not be read.".to_string(),
-                risk: "WireGuard activity cannot be audited without access to the wg command.".to_string(),
-                recommendation: "Install WireGuard tools and rerun the scan to inspect peer configurations.".to_string(),
+                description:
+                    "The WireGuard toolchain is unavailable or peer state could not be read."
+                        .to_string(),
+                risk: "WireGuard activity cannot be audited without access to the wg command."
+                    .to_string(),
+                recommendation:
+                    "Install WireGuard tools and rerun the scan to inspect peer configurations."
+                        .to_string(),
                 severity: Severity::Info,
                 category: "WireGuard".to_string(),
-            }]
+            }];
         }
     };
 
@@ -69,8 +74,11 @@ pub fn run_wireguard_audit() -> Vec<Finding> {
             findings.push(Finding {
                 title: format!("WireGuard peer appears inactive: {}", peer.public_key),
                 description: format!("Peer {} has no recent handshake recorded.", peer.public_key),
-                risk: "An inactive WireGuard peer may represent stale or unused access credentials.".to_string(),
-                recommendation: "Remove or rotate unused WireGuard peers to reduce attack surface.".to_string(),
+                risk:
+                    "An inactive WireGuard peer may represent stale or unused access credentials."
+                        .to_string(),
+                recommendation: "Remove or rotate unused WireGuard peers to reduce attack surface."
+                    .to_string(),
                 severity: Severity::Low,
                 category: "WireGuard".to_string(),
             });
@@ -81,18 +89,25 @@ pub fn run_wireguard_audit() -> Vec<Finding> {
         if peers.is_empty() {
             findings.push(Finding {
                 title: "No WireGuard peers detected".to_string(),
-                description: "No WireGuard peers were found during the peer state inspection.".to_string(),
-                risk: "No WireGuard peers were discovered, so VPN peer risks are not present.".to_string(),
-                recommendation: "Add WireGuard peers or verify configuration before rerunning the audit.".to_string(),
+                description: "No WireGuard peers were found during the peer state inspection."
+                    .to_string(),
+                risk: "No WireGuard peers were discovered, so VPN peer risks are not present."
+                    .to_string(),
+                recommendation:
+                    "Add WireGuard peers or verify configuration before rerunning the audit."
+                        .to_string(),
                 severity: Severity::Info,
                 category: "WireGuard".to_string(),
             });
         } else {
             findings.push(Finding {
                 title: "WireGuard audit completed".to_string(),
-                description: "WireGuard peers were examined and no inactive peers were detected.".to_string(),
+                description: "WireGuard peers were examined and no inactive peers were detected."
+                    .to_string(),
                 risk: "All discovered WireGuard peers have recent handshake activity.".to_string(),
-                recommendation: "Continue monitoring peer health and remove unused peers when appropriate.".to_string(),
+                recommendation:
+                    "Continue monitoring peer health and remove unused peers when appropriate."
+                        .to_string(),
                 severity: Severity::Info,
                 category: "WireGuard".to_string(),
             });
