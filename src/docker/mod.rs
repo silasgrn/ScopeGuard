@@ -80,13 +80,9 @@ fn list_containers() -> Vec<ContainerStatus> {
         .filter_map(|line| serde_json::from_str::<ContainerPsEntry>(line).ok())
         .map(|entry| {
             let host_config = inspect_host_config(engine, &entry.id);
-            let privileged = host_config
-                .as_ref()
-                .map_or(false, |config| config.privileged);
-            let host_network = host_config
-                .as_ref()
-                .map_or(false, |config| config.network_mode == "host");
-            let host_mount = host_config.as_ref().map_or(false, |config| {
+            let privileged = host_config.as_ref().is_some_and(|config| config.privileged);
+            let host_network = host_config.as_ref().is_some_and(|config| config.network_mode == "host");
+            let host_mount = host_config.as_ref().is_some_and(|config| {
                 config.mounts.iter().any(|mount| mount.source.is_some())
             });
 

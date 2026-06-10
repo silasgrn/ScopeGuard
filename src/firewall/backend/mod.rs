@@ -29,22 +29,18 @@ impl FirewallStatus {
 }
 
 fn run_command_with_sudo_fallback(cmd: &str, args: &[&str]) -> Option<String> {
-    if let Ok(output) = Command::new(cmd).args(args).output() {
-        if output.status.success() {
-            return Some(String::from_utf8_lossy(&output.stdout).into_owned());
-        }
+    if let Ok(output) = Command::new(cmd).args(args).output() && output.status.success() {
+        return Some(String::from_utf8_lossy(&output.stdout).into_owned());
     }
 
-    if let Ok(output) = Command::new("sudo").args(["-n", cmd]).args(args).output() {
-        if output.status.success() {
-            return Some(String::from_utf8_lossy(&output.stdout).into_owned());
-        }
+    if let Ok(output) = Command::new("sudo").args(["-n", cmd]).args(args).output()
+        && output.status.success()
+    {
+        return Some(String::from_utf8_lossy(&output.stdout).into_owned());
     }
 
-    if let Ok(output) = Command::new("sudo").arg(cmd).args(args).output() {
-        if output.status.success() {
-            return Some(String::from_utf8_lossy(&output.stdout).into_owned());
-        }
+    if let Ok(output) = Command::new("sudo").arg(cmd).args(args).output() && output.status.success() {
+        return Some(String::from_utf8_lossy(&output.stdout).into_owned());
     }
 
     None
