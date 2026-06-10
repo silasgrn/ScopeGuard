@@ -2,6 +2,28 @@ use std::process::Command;
 
 use crate::finding::{Finding, Severity};
 
+fn run_command_with_sudo_fallback(cmd: &str, args: &[&str]) -> Option<String> {
+    if let Ok(output) = Command::new(cmd).args(args).output() {
+        if output.status.success() {
+            return Some(String::from_utf8_lossy(&output.stdout).into_owned());
+        }
+    }
+
+    if let Ok(output) = Command::new("sudo").args(["-n", cmd]).args(args).output() {
+        if output.status.success() {
+            return Some(String::from_utf8_lossy(&output.stdout).into_owned());
+        }
+    }
+
+    if let Ok(output) = Command::new("sudo").arg(cmd).args(args).output() {
+        if output.status.success() {
+            return Some(String::from_utf8_lossy(&output.stdout).into_owned());
+        }
+    }
+
+    None
+}
+
 pub struct ListeningService {
     pub protocol: String,
     pub address: String,
@@ -53,45 +75,28 @@ fn check_public_bindings(services: &[ListeningService]) -> Vec<Finding> {
 pub fn run_network_audit() -> Vec<Finding> {
     let mut findings = Vec::new();
 
-    if let Ok(output) = Command::new("ss").arg("-tuln").output() {
-        if output.status.success() {
-            let content = String::from_utf8_lossy(&output.stdout);
-            let services = parse_listening_services(&content);
-            findings.extend(check_public_bindings(&services));
+    if let Some(content) = run_command_with_sudo_fallback("ss", &["-tuln"]) {
+        let services = parse_listening_services(&content);
+        findings.extend(check_public_bindings(&services));
 
-            if findings.is_empty() {
-                findings.push(Finding {
-                    title: "Network audit placeholder".to_string(),
-                    description: "No publicly exposed listeners were detected during the sample network scan.".to_string(),
-                    risk: "Network listeners are being inspected, but more in-depth service matching is required.".to_string(),
-                    recommendation: "Extend network discovery to identify service types and local-only bindings.".to_string(),
-                    severity: Severity::Info,
-                    category: "Network Security".to_string(),
-                });
-            }
-        } else {
+        if findings.is_empty() {
             findings.push(Finding {
-                title: "Network listener scan failed".to_string(),
-                description: "The ss command could not enumerate listening sockets.".to_string(),
-                risk: "Failed network discovery may hide services bound to public interfaces."
-                    .to_string(),
-                recommendation:
-                    "Ensure the ss utility is installed and accessible to the current user."
-                        .to_string(),
-                severity: Severity::Medium,
+                title: "No publicly exposed listeners detected".to_string(),
+                description: "The network scanner found no services bound to public interfaces.".to_string(),
+                risk: "No publicly exposed listening sockets were identified during this scan.".to_string(),
+                recommendation: "Review local-only bindings and verify the expected network exposure.".to_string(),
+                severity: Severity::Info,
                 category: "Network Security".to_string(),
             });
         }
     } else {
         findings.push(Finding {
-            title: "Network scanner unavailable".to_string(),
-            description: "The system does not appear to have the ss utility installed.".to_string(),
-            risk: "Without socket inspection, service exposure cannot be reliably assessed."
-                .to_string(),
+            title: "Network listener scan failed".to_string(),
+            description: "The ss command could not enumerate listening sockets, even with sudo fallback.".to_string(),
+            risk: "Failed network discovery may hide services bound to public interfaces.".to_string(),
             recommendation:
-                "Install iproute2 or another socket inspection tool before rerunning the audit."
-                    .to_string(),
-            severity: Severity::Info,
+                "Ensure the ss utility is installed and the scanner has permission to inspect sockets.".to_string(),
+            severity: Severity::Medium,
             category: "Network Security".to_string(),
         });
     }
