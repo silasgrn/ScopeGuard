@@ -1,45 +1,39 @@
-
 # ScopeGuard
 
-ScopeGuard is a Rust-first, offline infrastructure security auditing tool for Linux hosts, containers, and virtualization environments. It targets homelab operators, system administrators, and developers who want a fast, local analysis of configuration mistakes and exposed services.
+ScopeGuard is a Rust-first, offline infrastructure security auditing tool for Linux hosts, containers, and virtualization environments. It targets homelab operators, system administrators, and self-hosted operators who want a fast, local analysis of configuration issues, exposed services, and firewall posture.
 
 **Quick overview**
 
 - Language: Rust
-- Target: Linux (tested on Debian/Ubuntu)
-- Outputs: Human terminal output, JSON, interactive HTML report
+- Platform: Linux
+- Outputs: Human-readable terminal output, JSON, HTML report
+- Current focus: configuration auditing, network exposure, firewall inspection, SSH hardening
 
-**Project progress (actual)**
+## What the project can check today
 
-- MVP (v1.0) implementation: ~25% complete
-- Full roadmap (v2/v3 features included): ~30% complete
+| Area | Current coverage |
+| --- | --- |
+| CLI / report generation | `scan`, `report`, JSON output, HTML report creation |
+| Firewall audit | Active firewall backend detection, `nftables`/`iptables`/`ufw` parsing, inbound accept rule analysis, scope-aware findings for known services |
+| SSH / host security | `sshd_config` parsing, insecure option detection, missing host key checks, empty password hash detection in `/etc/shadow` |
+| Network security | Listening socket enumeration via `ss`, `netstat` fallback, public service detection, high-risk exposed service alerts, high public listener count warnings |
+| Scope-aware services | Uses configured scope definitions, marks in-scope exposures as informational, highlights out-of-scope public services |
 
-These are conservative, reality-based estimates: most modules are scaffolds or work-in-progress. The only fully working audit at the moment is the firewall audit backend and its parsing logic.
+## What is still missing compared to `SCOPE.md`
 
-**What currently works**
-
-- CLI: `scan`, `report` (basic runner present)
-- Fully implemented audit:
-  - Firewall: detection and parsing for `nftables`, `iptables`, and UFW (runtime rules parsing and scope-aware findings)
-
-**Work in progress / placeholders**
-
-- Network listener enumeration: sudo/root fallback added, but behavior may be incomplete on some hosts
-- Container runtime inspection (Docker/Podman): implemented but edge-cases remain
-- Host checks (SSH) and WireGuard parsing: present but not fully validated across environments
-- Services, attack-surface graph, VM discovery: scaffolding and partial implementations exist
-
-**Planned / remaining work**
-
-- Stabilize and test Network, Container, Host, WireGuard modules across target distros
-- Complete plugin API and documented extension interface (v2)
-- Auto-fix actions / remediation engine (v3)
-- CI / GitHub Actions integration (v3)
-- Enhanced history and trend analysis
+| Area | Remaining coverage needed |
+| --- | --- |
+| Host security | Additional hardening checks beyond SSH, password/lockout policy auditing, account control and PAM inspection |
+| Network security | Full port scanning, richer service discovery, interface-level exposure analysis, network zone classification |
+| Firewall audit | Policy analysis for permissive defaults, specific rule-level security recommendations |
+| Container security | Docker/Podman runtime inventory, root/privileged container detection, socket exposure, host network/PID/IPC sharing, mount safety, capability/resource limit checks, image hygiene |
+| Virtualization security | KVM/QEMU VM discovery, unsafe bridge detection, Proxmox VM/LXC discovery, guest firewall checks, backup/snapshot analysis |
+| WireGuard audit | Stale/unused peer detection, inactive connection analysis, peer traffic anomalies |
+| Service discovery & attack surface modeling | Automatic discovery beyond defined scope, attack surface graph generation, service-to-network mapping |
 
 ## Quickstart
 
-Run a local scan (development):
+Run a local scan:
 
 ```bash
 cargo run -- scan
@@ -47,25 +41,17 @@ cargo run -- scan --json > last-scan.json
 cargo run -- report
 ```
 
-Generate the HTML report and open it locally:
+Generate the HTML report and open it:
 
 ```bash
 cargo run -- report && xdg-open scopeguard-report.html
 ```
 
-## Configuration & scope
-
-Edit your scope definition to match the assets you consider in-scope — `SCOPE.md` documents the project scope. Findings that fall inside the configured scope are downgraded to `info` where appropriate.
-
 ## Contributing
 
-- Issues and PRs welcome — see CONTRIBUTING on the repository
+- Issues and PRs welcome
 - Code style: `rustfmt`, `clippy`
-
-## Contact
-
-Maintainers and project details are available in the repository.
 
 ---
 
-For more details and the full scope design see [SCOPE.md](SCOPE.md).
+For a complete view of project scope and intended coverage, see [SCOPE.md](SCOPE.md).
