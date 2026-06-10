@@ -9,28 +9,29 @@ ScopeGuard is a Rust-first, offline infrastructure security auditing tool for Li
 - Target: Linux (tested on Debian/Ubuntu)
 - Outputs: Human terminal output, JSON, interactive HTML report
 
-**Project progress**
+**Project progress (actual)**
 
-- MVP (v1.0) implementation: ~90% complete
-- Full roadmap (v2/v3 features included): ~70% complete
+- MVP (v1.0) implementation: ~25% complete
+- Full roadmap (v2/v3 features included): ~30% complete
 
-Progress estimates are approximate, based on implemented audit modules, report rendering, and integration tests found in the repository.
+These are conservative, reality-based estimates: most modules are scaffolds or work-in-progress. The only fully working audit at the moment is the firewall audit backend and its parsing logic.
 
-**What works (selected)**
+**What currently works**
 
-- CLI: `scan`, `report` (JSON & HTML)
-- Audit modules:
-  - Host: SSH configuration checks and basic host sanity checks
-  - Network: local listener enumeration with root/sudo fallback
-  - Firewall: detection and parsing for `nftables`, `iptables` and UFW
-  - Container: runtime inspection for Docker and Podman (containers, host mounts, network mode)
-  - Virtualization: VM discovery and exposure analysis
-  - WireGuard: runtime peer inspection (`wg show`), inactive/missing peers reported
-  - Services: scope-driven service reporting (no more static placeholders)
-  - Attack surface: local graph-building logic
+- CLI: `scan`, `report` (basic runner present)
+- Fully implemented audit:
+  - Firewall: detection and parsing for `nftables`, `iptables`, and UFW (runtime rules parsing and scope-aware findings)
+
+**Work in progress / placeholders**
+
+- Network listener enumeration: sudo/root fallback added, but behavior may be incomplete on some hosts
+- Container runtime inspection (Docker/Podman): implemented but edge-cases remain
+- Host checks (SSH) and WireGuard parsing: present but not fully validated across environments
+- Services, attack-surface graph, VM discovery: scaffolding and partial implementations exist
 
 **Planned / remaining work**
 
+- Stabilize and test Network, Container, Host, WireGuard modules across target distros
 - Complete plugin API and documented extension interface (v2)
 - Auto-fix actions / remediation engine (v3)
 - CI / GitHub Actions integration (v3)
