@@ -1,0 +1,12 @@
+{
+  "services": [
+    {
+      "name": "api-gateway",
+      "protocol": "tcp",
+      "host": "0.0.0.0",
+      "port": 8080,
+      "exposed": true,
+      "description": "Main REST API gateway"
+    }
+  ]
+}

@@ -24,40 +24,9 @@ impl ServiceEntry {
 }
 
 fn discover_services(scope: Option<&ScopeFile>) -> Vec<ServiceEntry> {
-    if let Some(scope) = scope {
-        return scope
-            .services
-            .iter()
-            .map(ServiceEntry::from_scope)
-            .collect();
-    }
-
-    vec![
-        ServiceEntry {
-            name: "nginx".to_string(),
-            port: 80,
-            protocol: "tcp".to_string(),
-            bound_to: "0.0.0.0".to_string(),
-            exposed: true,
-            description: Some("Example web server".to_string()),
-        },
-        ServiceEntry {
-            name: "postgres".to_string(),
-            port: 5432,
-            protocol: "tcp".to_string(),
-            bound_to: "127.0.0.1".to_string(),
-            exposed: false,
-            description: Some("Local database service".to_string()),
-        },
-        ServiceEntry {
-            name: "redis".to_string(),
-            port: 6379,
-            protocol: "tcp".to_string(),
-            bound_to: "0.0.0.0".to_string(),
-            exposed: true,
-            description: Some("In-memory cache service".to_string()),
-        },
-    ]
+    scope
+        .map(|scope| scope.services.iter().map(ServiceEntry::from_scope).collect())
+        .unwrap_or_default()
 }
 
 pub fn run_services_audit(scope: Option<&ScopeFile>) -> Vec<Finding> {
@@ -66,12 +35,26 @@ pub fn run_services_audit(scope: Option<&ScopeFile>) -> Vec<Finding> {
 
     for service in services {
         if service.exposed {
+            let severity = if scope.is_some() {
+                Severity::Info
+            } else {
+                Severity::High
+            };
+
             findings.push(Finding {
                 title: format!("Exposed service detected: {}", service.name),
                 description: format!("Service {} is listening on {}:{}.", service.name, service.bound_to, service.port),
-                risk: "Publicly exposed services may be accessible to attackers if not protected.".to_string(),
-                recommendation: "Verify whether this service should be accessible externally and apply access controls.".to_string(),
-                severity: Severity::High,
+                risk: if scope.is_some() {
+                    "This exposed service is declared in scope and should be reviewed for expected access.".to_string()
+                } else {
+                    "Publicly exposed services may be accessible to attackers if not protected.".to_string()
+                },
+                recommendation: if scope.is_some() {
+                    "Verify that the declared scoped service is intentionally exposed and protected.".to_string()
+                } else {
+                    "Verify whether this service should be accessible externally and apply access controls.".to_string()
+                },
+                severity,
                 category: "Services".to_string(),
             });
         }
@@ -79,14 +62,45 @@ pub fn run_services_audit(scope: Option<&ScopeFile>) -> Vec<Finding> {
 
     if findings.is_empty() {
         findings.push(Finding {
-            title: "Service discovery placeholder".to_string(),
-            description: "Service discovery routines are initialized and ready to inspect actual local services.".to_string(),
-            risk: "No exposed services were found by the placeholder discovery.".to_string(),
-            recommendation: "Implement actual service discovery for web servers, databases, and caches.".to_string(),
+            title: "No exposed services discovered".to_string(),
+            description: "No exposed services were identified from the current scope or discovery data.".to_string(),
+            risk: "No exposed services were found, but additional discovery coverage may still be needed.".to_string(),
+            recommendation: "Extend service discovery to capture more local services and their exposure.".to_string(),
             severity: Severity::Info,
             category: "Services".to_string(),
         });
     }
 
     findings
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::scope::{ScopeFile, ScopeService};
+
+    #[test]
+    fn discover_services_returns_empty_without_scope() {
+        let services = discover_services(None);
+        assert!(services.is_empty());
+    }
+
+    #[test]
+    fn run_services_audit_with_scope_reports_matching_service_as_info() {
+        let scope = ScopeFile {
+            services: vec![ScopeService {
+                name: "my-service".to_string(),
+                protocol: "tcp".to_string(),
+                host: "0.0.0.0".to_string(),
+                port: 9001,
+                exposed: true,
+                description: Some("Test service".to_string()),
+            }],
+        };
+
+        let findings = run_services_audit(Some(&scope));
+        assert_eq!(findings.len(), 1);
+        assert_eq!(findings[0].severity, Severity::Info);
+        assert!(findings[0].title.contains("my-service"));
+    }
 }
