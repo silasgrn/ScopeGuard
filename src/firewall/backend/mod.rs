@@ -8,6 +8,14 @@ pub enum FirewallBackend {
     Unknown,
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub enum FirewallPolicy {
+    Accept,
+    Drop,
+    Reject,
+    Unknown,
+}
+
 #[derive(Debug, Clone)]
 pub struct FirewallRule {
     pub protocol: String,
@@ -20,11 +28,16 @@ pub struct FirewallStatus {
     pub backend: FirewallBackend,
     pub rules_loaded: bool,
     pub raw_output: Option<String>,
+    pub default_policy: FirewallPolicy,
 }
 
 impl FirewallStatus {
     pub fn is_backend_available(&self) -> bool {
         !matches!(self.backend, FirewallBackend::Unknown)
+    }
+
+    pub fn has_permissive_default_policy(&self) -> bool {
+        matches!(self.default_policy, FirewallPolicy::Accept)
     }
 }
 
@@ -50,29 +63,101 @@ fn run_command_with_sudo_fallback(cmd: &str, args: &[&str]) -> Option<String> {
     None
 }
 
+fn parse_nft_default_policy(output: &str) -> FirewallPolicy {
+    output
+        .lines()
+        .find_map(|line| {
+            let lower = line.to_lowercase();
+            if lower.contains("policy accept") {
+                Some(FirewallPolicy::Accept)
+            } else if lower.contains("policy drop") {
+                Some(FirewallPolicy::Drop)
+            } else if lower.contains("policy reject") {
+                Some(FirewallPolicy::Reject)
+            } else {
+                None
+            }
+        })
+        .unwrap_or(FirewallPolicy::Unknown)
+}
+
+fn parse_iptables_default_policy(output: &str) -> FirewallPolicy {
+    output
+        .lines()
+        .find_map(|line| {
+            let lower = line.to_lowercase();
+            if lower.starts_with("chain input") {
+                lower
+                    .split('(')
+                    .nth(1)
+                    .and_then(|part| part.split(')').next())
+                    .and_then(|policy| policy.split_whitespace().nth(1))
+                    .map(|policy| match policy {
+                        "accept" => FirewallPolicy::Accept,
+                        "drop" => FirewallPolicy::Drop,
+                        "reject" => FirewallPolicy::Reject,
+                        _ => FirewallPolicy::Unknown,
+                    })
+            } else {
+                None
+            }
+        })
+        .unwrap_or(FirewallPolicy::Unknown)
+}
+
+fn parse_ufw_default_policy(output: &str) -> FirewallPolicy {
+    output
+        .lines()
+        .find_map(|line| {
+            let lower = line.trim().to_lowercase();
+            if lower.starts_with("default:") {
+                lower
+                    .trim_start_matches("default:")
+                    .trim()
+                    .split_whitespace()
+                    .next()
+                    .map(|policy| match policy {
+                        "allow" | "accept" => FirewallPolicy::Accept,
+                        "deny" => FirewallPolicy::Drop,
+                        "reject" => FirewallPolicy::Reject,
+                        _ => FirewallPolicy::Unknown,
+                    })
+            } else {
+                None
+            }
+        })
+        .unwrap_or(FirewallPolicy::Unknown)
+}
+
 pub fn detect_firewall() -> FirewallStatus {
     if let Some(output) = run_command_with_sudo_fallback("nft", &["list", "ruleset"]) {
+        let default_policy = parse_nft_default_policy(&output);
         return FirewallStatus {
             backend: FirewallBackend::Nftables,
             rules_loaded: true,
             raw_output: Some(output),
+            default_policy,
         };
     }
 
     if let Some(output) = run_command_with_sudo_fallback("iptables", &["-L", "-n", "-v"]) {
+        let default_policy = parse_iptables_default_policy(&output);
         return FirewallStatus {
             backend: FirewallBackend::Iptables,
             rules_loaded: true,
             raw_output: Some(output),
+            default_policy,
         };
     }
 
     if let Some(output) = run_command_with_sudo_fallback("ufw", &["status", "verbose"]) {
         let active = output.to_lowercase().contains("status: active");
+        let default_policy = parse_ufw_default_policy(&output);
         return FirewallStatus {
             backend: FirewallBackend::Ufw,
             rules_loaded: active,
             raw_output: Some(output),
+            default_policy,
         };
     }
 
@@ -80,6 +165,7 @@ pub fn detect_firewall() -> FirewallStatus {
         backend: FirewallBackend::Unknown,
         rules_loaded: false,
         raw_output: None,
+        default_policy: FirewallPolicy::Unknown,
     }
 }
 
@@ -241,10 +327,29 @@ mod tests {
             backend: FirewallBackend::Unknown,
             rules_loaded: false,
             raw_output: None,
+            default_policy: FirewallPolicy::Unknown,
         };
 
         assert!(!status.is_backend_available());
         assert_eq!(status.backend, FirewallBackend::Unknown);
+    }
+
+    #[test]
+    fn parse_nft_default_policy_detects_drop() {
+        let output = "table inet filter {\n chain input { type filter hook input priority 0; policy drop; } }";
+        assert_eq!(parse_nft_default_policy(output), FirewallPolicy::Drop);
+    }
+
+    #[test]
+    fn parse_iptables_default_policy_detects_accept() {
+        let output = "Chain INPUT (policy ACCEPT)";
+        assert_eq!(parse_iptables_default_policy(output), FirewallPolicy::Accept);
+    }
+
+    #[test]
+    fn parse_ufw_default_policy_detects_deny() {
+        let output = "Status: active\nDefault: deny (incoming), allow (outgoing), disabled (routed)\n";
+        assert_eq!(parse_ufw_default_policy(output), FirewallPolicy::Drop);
     }
 
     #[test]

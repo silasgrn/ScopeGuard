@@ -10,7 +10,7 @@ pub fn run_firewall_audit(scope: Option<&ScopeFile>) -> Vec<crate::finding::Find
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::firewall::backend::{FirewallBackend, FirewallStatus};
+    use crate::firewall::backend::{FirewallBackend, FirewallPolicy, FirewallStatus};
 
     #[test]
     fn run_firewall_audit_returns_findings() {
@@ -18,6 +18,7 @@ mod tests {
             backend: FirewallBackend::Unknown,
             rules_loaded: false,
             raw_output: None,
+            default_policy: FirewallPolicy::Unknown,
         };
 
         let findings = build_firewall_findings(&status, None);

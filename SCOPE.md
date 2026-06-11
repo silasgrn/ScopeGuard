@@ -138,12 +138,14 @@ Supported:
 
 * nftables
 * iptables
+* ufw
 
 Checks:
 
 * Default policy validation
-* Missing firewall detection
+* Policy analysis for permissive defaults
 * Overly permissive rules
+* Specific rule-level security recommendations
 * Public admin port exposure
 
 ---
