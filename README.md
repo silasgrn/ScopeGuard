@@ -14,7 +14,7 @@ ScopeGuard is a Rust-first, offline infrastructure security auditing tool for Li
 | Area | Current coverage |
 | --- | --- |
 | CLI / report generation | `scan`, `report`, JSON output, HTML report creation |
-| Firewall audit | Active firewall backend detection, `nftables`/`iptables`/`ufw` parsing, inbound accept rule analysis, scope-aware findings for known services |
+| Firewall audit | Active firewall backend detection, `nftables`/`iptables`/`ufw` parsing, permissive default policy detection, inbound accept rule analysis, scope-aware findings with rule-level recommendations |
 | SSH / host security | `sshd_config` parsing, insecure option detection, missing host key checks, empty password hash detection in `/etc/shadow` |
 | Network security | Listening socket enumeration via `ss`, `netstat` fallback, public service detection, high-risk exposed service alerts, high public listener count warnings |
 | Scope-aware services | Uses configured scope definitions, marks in-scope exposures as informational, highlights out-of-scope public services |
