@@ -93,10 +93,7 @@ pub fn build_firewall_findings(status: &FirewallStatus, scope: Option<&ScopeFile
         }
 
         return vec![Finding {
-            title: format!(
-                "{} firewall loaded",
-                describe_backend_name(&status.backend)
-            ),
+            title: format!("{} firewall loaded", describe_backend_name(&status.backend)),
             description:
                 "The firewall backend is configured and no inbound accept rules were parsed."
                     .to_string(),
@@ -113,7 +110,9 @@ pub fn build_firewall_findings(status: &FirewallStatus, scope: Option<&ScopeFile
     for rule in rules {
         let matching_service = find_scope_match(&rule, scope);
         let public_access = is_public_rule(&rule);
-        let (severity, title, description, risk, recommendation) = if let Some(service) = matching_service {
+        let (severity, title, description, risk, recommendation) = if let Some(service) =
+            matching_service
+        {
             let title = format!(
                 "Known scoped firewall service detected on port {}",
                 rule.port
@@ -135,7 +134,11 @@ pub fn build_firewall_findings(status: &FirewallStatus, scope: Option<&ScopeFile
             } else {
                 "If this service is intentionally exposed, ensure scope documentation stays up to date and access is restricted to expected clients.".to_string()
             };
-            let severity = if public_access { Severity::Medium } else { Severity::Info };
+            let severity = if public_access {
+                Severity::Medium
+            } else {
+                Severity::Info
+            };
             (severity, title, description, risk, recommendation)
         } else {
             let title = format!("Open firewall service detected on port {}", rule.port);
@@ -143,7 +146,8 @@ pub fn build_firewall_findings(status: &FirewallStatus, scope: Option<&ScopeFile
             let risk = if public_access {
                 "An open firewall rule permits inbound traffic from any source and may expose the host to the internet.".to_string()
             } else {
-                "An open firewall rule permits inbound traffic to an unsupervised port or protocol.".to_string()
+                "An open firewall rule permits inbound traffic to an unsupervised port or protocol."
+                    .to_string()
             };
             let recommendation = if public_access {
                 "Review this public-facing firewall rule and restrict it to trusted hosts or disable it if the service is unnecessary.".to_string()

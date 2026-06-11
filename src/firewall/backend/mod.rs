@@ -113,7 +113,6 @@ fn parse_ufw_default_policy(output: &str) -> FirewallPolicy {
             if lower.starts_with("default:") {
                 lower
                     .trim_start_matches("default:")
-                    .trim()
                     .split_whitespace()
                     .next()
                     .map(|policy| match policy {
@@ -343,12 +342,16 @@ mod tests {
     #[test]
     fn parse_iptables_default_policy_detects_accept() {
         let output = "Chain INPUT (policy ACCEPT)";
-        assert_eq!(parse_iptables_default_policy(output), FirewallPolicy::Accept);
+        assert_eq!(
+            parse_iptables_default_policy(output),
+            FirewallPolicy::Accept
+        );
     }
 
     #[test]
     fn parse_ufw_default_policy_detects_deny() {
-        let output = "Status: active\nDefault: deny (incoming), allow (outgoing), disabled (routed)\n";
+        let output =
+            "Status: active\nDefault: deny (incoming), allow (outgoing), disabled (routed)\n";
         assert_eq!(parse_ufw_default_policy(output), FirewallPolicy::Drop);
     }
 
